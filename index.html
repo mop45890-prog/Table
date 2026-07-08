@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>婚禮座位安排</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f4ee;
+      --panel: #fffdf8;
+      --panel-strong: #ffffff;
+      --ink: #24211d;
+      --muted: #716a60;
+      --line: #ded6c9;
+      --accent: #2f6f73;
+      --accent-dark: #194f54;
+      --rose: #b85863;
+      --gold: #b0832f;
+      --green: #4b7d55;
+      --blue: #496f9d;
+      --shadow: 0 18px 45px rgba(49, 42, 30, .12);
+      --radius: 8px;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.24) 280px),
+        var(--bg);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--ink);
+      border-radius: 7px;
+      min-height: 36px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--accent); }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    button.danger {
+      color: #8b2d34;
+      border-color: #e5bdc2;
+      background: #fff7f8;
+    }
+
+    .app {
+      width: min(1680px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 3.2vw, 44px);
+      letter-spacing: 0;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      min-height: 70px;
+    }
+
+    .stat b {
+      display: block;
+      font-size: 26px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    aside, .table-card {
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    aside {
+      position: sticky;
+      top: 12px;
+      max-height: calc(100vh - 24px);
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .side-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side-head h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 8px;
+    }
+
+    .search-row, .capacity-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 7px 10px;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(47, 111, 115, .14);
+    }
+
+    .group-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.42);
+    }
+
+    .tab {
+      min-height: 30px;
+      padding: 0 9px;
+      font-size: 13px;
+    }
+
+    .tab.active {
+      background: var(--accent-dark);
+      color: #fff;
+      border-color: var(--accent-dark);
+    }
+
+    .guest-pool {
+      min-height: 160px;
+      padding: 12px;
+      overflow: auto;
+      align-content: start;
+    }
+
+    .dropzone.drag-over {
+      outline: 3px solid rgba(47, 111, 115, .3);
+      outline-offset: -4px;
+      background: rgba(47, 111, 115, .05);
+    }
+
+    .guest {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 100%;
+      min-height: 30px;
+      margin: 4px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-left-width: 5px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(49, 42, 30, .08);
+      cursor: grab;
+      user-select: none;
+      vertical-align: top;
+    }
+
+    .guest:active { cursor: grabbing; }
+
+    .guest[hidden] { display: none; }
+
+    .guest-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 210px;
+      font-size: 14px;
+    }
+
+    .guest-note {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .guest[data-side="Tiffany"] { border-left-color: var(--rose); }
+    .guest[data-side="Mop"] { border-left-color: var(--blue); }
+    .guest[data-side="靜芠"] { border-left-color: var(--green); }
+
+    main {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(310px, 1fr));
+      gap: 12px;
+    }
+
+    .table-card {
+      min-height: 248px;
+      display: grid;
+      grid-template-rows: auto minmax(128px, 1fr) auto;
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.58);
+    }
+
+    .table-title {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+    }
+
+    .table-number {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .table-name {
+      border: 0;
+      border-bottom: 1px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+      min-height: 26px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .table-name:focus {
+      box-shadow: none;
+      border-color: var(--accent);
+    }
+
+    .table-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .table-count {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: #f3efe6;
+      color: var(--ink);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .table-count.warning {
+      background: #fff0d9;
+      color: #8b5c00;
+    }
+
+    .table-count.over {
+      background: #ffe7ea;
+      color: #9f2630;
+    }
+
+    .seats {
+      padding: 10px;
+      min-height: 132px;
+    }
+
+    .table-foot {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      align-items: center;
+    }
+
+    .mini {
+      min-height: 30px;
+      font-size: 13px;
+      padding: 0 9px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    dialog {
+      width: min(720px, calc(100vw - 26px));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+
+    dialog::backdrop { background: rgba(20, 18, 15, .42); }
+
+    .modal-head, .modal-body, .modal-foot {
+      padding: 14px;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .modal-body {
+      display: grid;
+      gap: 10px;
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    textarea {
+      min-height: 260px;
+      resize: vertical;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      transition: .2s ease;
+      z-index: 20;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1080px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: relative;
+        top: auto;
+        max-height: none;
+      }
+
+      .guest-pool {
+        max-height: 320px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app { padding: 12px; }
+
+      header {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .toolbar { justify-content: flex-start; }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .toolbar, aside, .table-foot, dialog, .toast { display: none !important; }
+      .app { width: 100%; padding: 0; }
+      header { display: block; margin-bottom: 8px; }
+      .subtitle { color: #333; }
+      .stats { grid-template-columns: repeat(5, 1fr); }
+      main { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .table-card, .stat { box-shadow: none; break-inside: avoid; }
+      .guest { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>婚禮座位安排</h1>
+        <div class="subtitle">14 桌互動拖曳版。安排結果會自動存在這台瀏覽器，也可以匯出 JSON 備份或印成座位表。</div>
+      </div>
+      <div class="toolbar">
+        <button id="autoArrangeBtn" title="依照目前分類快速分桌">自動分桌</button>
+        <button id="exportBtn" title="匯出目前安排">匯出</button>
+        <button id="importBtn" title="匯入先前匯出的 JSON">匯入</button>
+        <button id="printBtn" title="列印或存成 PDF">列印</button>
+        <button id="resetBtn" class="danger" title="清除瀏覽器中的安排">重設</button>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="座位統計">
+      <div class="stat"><b id="totalGuests">0</b><span>名單總人數</span></div>
+      <div class="stat"><b id="assignedGuests">0</b><span>已安排</span></div>
+      <div class="stat"><b id="unassignedGuests">0</b><span>待安排</span></div>
+      <div class="stat"><b id="tableCount">14</b><span>桌數</span></div>
+      <div class="stat"><b id="overTables">0</b><span>超過容量桌數</span></div>
+    </section>
+
+    <section class="workspace">
+      <aside>
+        <div class="side-head">
+          <h2>待安排名單</h2>
+          <div class="controls">
+            <div class="search-row">
+              <input id="searchInput" type="search" placeholder="搜尋姓名、分類、備註" autocomplete="off" />
+              <button id="clearSearchBtn" title="清除搜尋">清除</button>
+            </div>
+            <select id="sideFilter" title="篩選親友來源">
+              <option value="all">全部來源</option>
+              <option value="Tiffany">蒂芬妮</option>
+              <option value="Mop">Mop</option>
+              <option value="靜芠">靜芠</option>
+            </select>
+            <div class="capacity-row">
+              <input id="capacityInput" type="number" min="1" max="20" value="10" title="每桌建議人數" />
+              <button id="applyCapacityBtn" title="套用到全部桌">套用容量</button>
+            </div>
+          </div>
+        </div>
+        <div class="group-tabs" id="groupTabs" aria-label="分類篩選"></div>
+        <div id="pool" class="guest-pool dropzone" data-table-id="unassigned" aria-label="待安排名單"></div>
+      </aside>
+
+      <main id="tables" aria-label="婚禮桌次"></main>
+    </section>
+  </div>
+
+  <dialog id="dataDialog">
+    <div class="modal-head">
+      <h2 id="dialogTitle">資料</h2>
+      <button id="closeDialogBtn" class="mini" title="關閉">關閉</button>
+    </div>
+    <div class="modal-body">
+      <div class="hint" id="dialogHint"></div>
+      <textarea id="dataBox" spellcheck="false"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button id="copyDataBtn">複製</button>
+      <button id="applyImportBtn" class="primary">套用匯入</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "wedding-seating-v2";
+    const DEFAULT_CAPACITY = 10;
+
+    const rawGuests = [
+      ["tif-main-1", "我", "Tiffany", "主桌", ""],
+      ["tif-main-2", "爸", "Tiffany", "主桌", ""],
+      ["tif-main-3", "媽", "Tiffany", "主桌", ""],
+      ["tif-main-4", "舅舅", "Tiffany", "主桌", ""],
+      ["tif-rel-1", "阿嬤", "Tiffany", "親戚", ""],
+      ["tif-rel-2", "晴渝", "Tiffany", "親戚", ""],
+      ["tif-rel-3", "阿姨", "Tiffany", "親戚", ""],
+      ["tif-rel-4", "姨丈", "Tiffany", "親戚", ""],
+      ["tif-rel-5", "英喬", "Tiffany", "親戚", ""],
+      ["tif-rel-6", "泓諭", "Tiffany", "親戚", ""],
+      ["tif-rel-7", "莉芳", "Tiffany", "親戚", ""],
+      ["tif-rel-8", "紀為", "Tiffany", "親戚", ""],
+      ["tif-rel-9", "瑋倢", "Tiffany", "親戚", ""],
+      ["tif-rel-10", "外勞", "Tiffany", "親戚", ""],
+      ["tif-high-1", "冠妤", "Tiffany", "高中", ""],
+      ["tif-high-2", "千惠", "Tiffany", "高中", ""],
+      ["tif-high-3", "千惠同行", "Tiffany", "高中", "千惠*2"],
+      ["tif-18sa-1", "宇崴", "Tiffany", "18SA", ""],
+      ["tif-18sa-2", "宇崴同行", "Tiffany", "18SA", "宇崴*2"],
+      ["tif-18sa-3", "小花", "Tiffany", "18SA", ""],
+      ["tif-18sa-4", "榆芊", "Tiffany", "18SA", ""],
+      ["tif-18sa-5", "榆芊同行", "Tiffany", "18SA", "榆芊*2"],
+      ["tif-18sa-6", "Kay", "Tiffany", "18SA", ""],
+      ["tif-18sa-7", "Kay同行", "Tiffany", "18SA", "Kay*2"],
+      ["tif-18sa-8", "瑀柔", "Tiffany", "18SA", ""],
+      ["tif-18sa-9", "懷萱", "Tiffany", "18SA", ""],
+      ["tif-18sa-10", "懷萱嬰兒", "Tiffany", "18SA", "嬰兒"],
+      ["tif-18sa-11", "粘", "Tiffany", "18SA", ""],
+      ["tif-18sa-12", "廖", "Tiffany", "18SA", ""],
+      ["tif-18sa-13", "沛珊", "Tiffany", "18SA", ""],
+      ["tif-18sa-14", "沛珊同行", "Tiffany", "18SA", "沛珊*2"],
+      ["tif-18sa-15", "阿雞", "Tiffany", "18SA", ""],
+      ["tif-college-1", "小莊", "Tiffany", "大學", ""],
+      ["tif-college-2", "飛鼠", "Tiffany", "大學", ""],
+      ["tif-college-3", "董", "Tiffany", "大學", ""],
+      ["tif-college-4", "董同行", "Tiffany", "大學", "董*2"],
+      ["tif-work-1", "佩宜", "Tiffany", "同事", ""],
+      ["tif-work-2", "浚譯", "Tiffany", "同事", ""],
+      ["tif-work-3", "彥廷", "Tiffany", "同事", ""],
+      ["tif-work-4", "彥廷同行", "Tiffany", "同事", "彥廷*2"],
+      ["tif-work-5", "大哥", "Tiffany", "同事", ""],
+      ["tif-work-6", "玟伶", "Tiffany", "同事", ""],
+      ["tif-work-7", "玟伶同行", "Tiffany", "同事", "玟伶*2"],
+      ["tif-work-8", "家本", "Tiffany", "同事", ""],
+      ["tif-work-9", "庭瑜", "Tiffany", "同事", ""],
+      ["tif-work-10", "郁婷", "Tiffany", "同事", ""],
+      ["tif-work-11", "品妤", "Tiffany", "同事", ""],
+      ["tif-work-12", "如芳", "Tiffany", "同事", ""],
+
+      ["mop-main-1", "辰", "Mop", "主桌", ""],
+      ["mop-main-2", "卉莉", "Mop", "主桌", ""],
+      ["mop-main-3", "阿嬤", "Mop", "主桌", ""],
+      ["mop-main-4", "舅婆", "Mop", "主桌", ""],
+      ["mop-main-5", "大舅", "Mop", "主桌", ""],
+      ["mop-main-6", "小舅", "Mop", "主桌", ""],
+      ["mop-main-7", "大伯", "Mop", "主桌", ""],
+      ["mop-main-8", "二伯", "Mop", "主桌", ""],
+      ["mop-rel-1", "姐姐", "Mop", "親戚", ""],
+      ["mop-rel-2", "大表姐", "Mop", "親戚", ""],
+      ["mop-rel-3", "表哥", "Mop", "親戚", ""],
+      ["mop-rel-4", "表哥同行", "Mop", "親戚", "表哥*2"],
+      ["mop-rel-5", "由佳", "Mop", "親戚", ""],
+      ["mop-rel-6", "小表弟", "Mop", "親戚", ""],
+      ["mop-rel-7", "小表弟同行", "Mop", "親戚", "小表弟*2"],
+      ["mop-rel-8", "舅媽", "Mop", "親戚", ""],
+      ["mop-rel-9", "爺爺", "Mop", "親戚", ""],
+      ["mop-rel-10", "外勞 1", "Mop", "親戚", ""],
+      ["mop-rel-11", "外勞 2", "Mop", "親戚", ""],
+      ["mop-rel-12", "阿姨", "Mop", "親戚", ""],
+      ["mop-rel-13", "Solar", "Mop", "親戚", ""],
+      ["mop-rel-14", "媒人", "Mop", "親戚", ""],
+      ["mop-aunt1-1", "大姑", "Mop", "親戚", "未確定，可能不來"],
+      ["mop-aunt2-1", "二姑 1", "Mop", "親戚", "要住"],
+      ["mop-aunt2-2", "二姑 2", "Mop", "親戚", "要住"],
+      ["mop-aunt2-3", "二姑 3", "Mop", "親戚", "要住"],
+      ["mop-aunt2-4", "二姑 4", "Mop", "親戚", "要住"],
+      ["mop-aunt2-5", "二姑加 1", "Mop", "親戚", "可能增加"],
+      ["mop-aunt2-6", "二姑加 2", "Mop", "親戚", "可能增加"],
+      ["mop-aunt3-1", "三姑 1", "Mop", "親戚", "要住"],
+      ["mop-aunt3-2", "三姑 2", "Mop", "親戚", "要住"],
+      ["mop-aunt4-1", "四姑", "Mop", "親戚", "不住"],
+      ["mop-uncle1-1", "大伯親友 1", "Mop", "親戚", "不住"],
+      ["mop-uncle1-2", "大伯親友 2", "Mop", "親戚", "不住"],
+      ["mop-uncle1-3", "大伯親友 3", "Mop", "親戚", "不住"],
+      ["mop-uncle1-4", "大伯親友 4", "Mop", "親戚", "不住"],
+      ["mop-uncle1-5", "大伯親友 5", "Mop", "親戚", "不住"],
+      ["mop-uncle2-1", "二伯親友 1", "Mop", "親戚", "要住"],
+      ["mop-uncle2-2", "二伯親友 2", "Mop", "親戚", "要住"],
+      ["mop-uncle2-3", "二伯親友 3", "Mop", "親戚", "要住"],
+      ["mop-uncle2-4", "二伯親友 4", "Mop", "親戚", "要住"],
+      ["mop-great-1", "舅婆親友 1", "Mop", "親戚", "舅婆 2人"],
+      ["mop-great-2", "舅婆親友 2", "Mop", "親戚", "舅婆 2人"],
+      ["mop-huili-1", "卉莉幹部 1", "Mop", "親戚", ""],
+      ["mop-huili-2", "卉莉幹部 2", "Mop", "親戚", ""],
+      ["mop-huili-3", "卉莉幹部 3", "Mop", "親戚", ""],
+
+      ["mop-junior-1", "家宇", "Mop", "國中", ""],
+      ["mop-junior-2", "淳哥", "Mop", "國中", ""],
+      ["mop-high-1", "度假村小隊 1", "Mop", "高中", ""],
+      ["mop-high-2", "度假村小隊 2", "Mop", "高中", ""],
+      ["mop-high-3", "度假村小隊 3", "Mop", "高中", ""],
+      ["mop-high-4", "度假村小隊 4", "Mop", "高中", ""],
+      ["mop-high-5", "度假村小隊 5", "Mop", "高中", ""],
+      ["mop-high-6", "度假村小隊 6", "Mop", "高中", ""],
+      ["mop-high-7", "秉鈞", "Mop", "高中", ""],
+      ["mop-high-8", "秉鈞同行", "Mop", "高中", "秉鈞*2"],
+      ["mop-college-1", "秉翰", "Mop", "大學", ""],
+      ["mop-college-2", "秉翰嬰兒", "Mop", "大學", "嬰兒"],
+      ["mop-college-3", "品瑋", "Mop", "大學", ""],
+      ["mop-college-4", "品瑋嬰兒", "Mop", "大學", "嬰兒"],
+      ["mop-college-5", "智堯", "Mop", "大學", ""],
+      ["mop-college-6", "玄宇", "Mop", "大學", ""],
+      ["mop-college-7", "老李", "Mop", "大學", ""],
+      ["mop-college-8", "老李同行", "Mop", "大學", "老李*2"],
+      ["mop-college-9", "俊諭", "Mop", "大學", ""],
+      ["mop-college-10", "俊諭同行", "Mop", "大學", "俊諭*2"],
+      ["mop-grad-1", "祐民", "Mop", "研究所", ""],
+      ["mop-grad-2", "瑾銳", "Mop", "研究所", ""],
+      ["mop-grad-3", "怡學", "Mop", "研究所", "可能不來"],
+      ["mop-grad-4", "怡學同行", "Mop", "研究所", "可能不來"],
+      ["mop-grad-5", "聖皓", "Mop", "研究所", ""],
+      ["mop-grad-6", "聖皓同行", "Mop", "研究所", "聖皓*2"],
+      ["mop-grad-7", "坤達", "Mop", "研究所", ""],
+      ["mop-grad-8", "坤達同行", "Mop", "研究所", "坤達*2"],
+      ["mop-grad-9", "景綸", "Mop", "研究所", ""],
+      ["mop-grad-10", "秉桓", "Mop", "研究所", ""],
+      ["mop-grad-11", "秉桓同行", "Mop", "研究所", "秉桓*2"],
+      ["mop-grad-12", "緯仲", "Mop", "研究所", ""],
+
+      ["jing-1", "靜芠朋友 1", "靜芠", "朋友", ""],
+      ["jing-2", "靜芠朋友 2", "靜芠", "朋友", ""],
+      ["jing-3", "靜芠朋友 3", "靜芠", "朋友", ""],
+      ["jing-4", "靜芠朋友 4", "靜芠", "朋友", ""],
+      ["jing-5", "靜芠朋友 5", "靜芠", "朋友", ""],
+      ["jing-6", "靜芠朋友 6", "靜芠", "朋友", ""],
+      ["jing-7", "靜芠朋友 7", "靜芠", "朋友", ""],
+      ["jing-8", "靜芠朋友 8", "靜芠", "朋友", ""],
+      ["jing-9", "靜芠朋友 9", "靜芠", "朋友", ""],
+      ["jing-10", "靜芠朋友 10", "靜芠", "朋友", ""]
+    ];
+
+    const guests = rawGuests.map(([id, name, side, group, note]) => ({ id, name, side, group, note }));
+
+    const initialTables = [
+      "主桌",
+      "蒂芬妮親戚",
+      "蒂芬妮高中 / 大學",
+      "18SA",
+      "18SA / 同事",
+      "蒂芬妮同事",
+      "Mop 主桌",
+      "Mop 親戚 A",
+      "Mop 親戚 B",
+      "Mop 親戚 C",
+      "Mop 國高中",
+      "Mop 大學",
+      "Mop 研究所",
+      "靜芠朋友"
+    ].map((name, index) => ({
+      id: `table-${index + 1}`,
+      name,
+      capacity: DEFAULT_CAPACITY,
+      guestIds: []
+    }));
+
+    const starterAssignments = {
+      "table-1": ["tif-main-1", "tif-main-2", "tif-main-3", "tif-main-4", "mop-main-1", "mop-main-2", "mop-main-3", "mop-main-4", "mop-main-5", "mop-main-6"],
+      "table-2": ["tif-rel-1", "tif-rel-2", "tif-rel-3", "tif-rel-4", "tif-rel-5", "tif-rel-6", "tif-rel-7", "tif-rel-8", "tif-rel-9", "tif-rel-10"],
+      "table-3": ["tif-high-1", "tif-high-2", "tif-high-3", "tif-college-1", "tif-college-2", "tif-college-3", "tif-college-4", "mop-grad-10", "mop-grad-11"],
+      "table-4": ["tif-18sa-1", "tif-18sa-2", "tif-18sa-3", "tif-18sa-4", "tif-18sa-5", "tif-18sa-6", "tif-18sa-7", "tif-18sa-8", "tif-18sa-9", "tif-18sa-10"],
+      "table-5": ["tif-18sa-11", "tif-18sa-12", "tif-18sa-13", "tif-18sa-14", "tif-18sa-15", "tif-work-1", "tif-work-2", "tif-work-3", "tif-work-4", "tif-work-5"],
+      "table-6": ["tif-work-6", "tif-work-7", "tif-work-8", "tif-work-9", "tif-work-10", "tif-work-11", "tif-work-12", "mop-grad-12"],
+      "table-7": ["mop-main-7", "mop-main-8", "mop-rel-1", "mop-rel-2", "mop-rel-3", "mop-rel-4", "mop-rel-5", "mop-rel-6", "mop-rel-7", "mop-rel-8"],
+      "table-8": ["mop-rel-9", "mop-rel-10", "mop-rel-11", "mop-rel-12", "mop-rel-13", "mop-rel-14", "mop-aunt1-1", "mop-aunt2-1", "mop-aunt2-2", "mop-aunt2-3"],
+      "table-9": ["mop-aunt2-4", "mop-aunt2-5", "mop-aunt2-6", "mop-aunt3-1", "mop-aunt3-2", "mop-aunt4-1", "mop-great-1", "mop-great-2", "mop-huili-1", "mop-huili-2"],
+      "table-10": ["mop-huili-3", "mop-uncle1-1", "mop-uncle1-2", "mop-uncle1-3", "mop-uncle1-4", "mop-uncle1-5", "mop-uncle2-1", "mop-uncle2-2", "mop-uncle2-3", "mop-uncle2-4"],
+      "table-11": ["mop-junior-1", "mop-junior-2", "mop-high-1", "mop-high-2", "mop-high-3", "mop-high-4", "mop-high-5", "mop-high-6", "mop-high-7", "mop-high-8"],
+      "table-12": ["mop-college-1", "mop-college-2", "mop-college-3", "mop-college-4", "mop-college-5", "mop-college-6", "mop-college-7", "mop-college-8", "mop-college-9", "mop-college-10"],
+      "table-13": ["mop-grad-1", "mop-grad-2", "mop-grad-3", "mop-grad-4", "mop-grad-5", "mop-grad-6", "mop-grad-7", "mop-grad-8", "mop-grad-9"],
+      "table-14": ["jing-1", "jing-2", "jing-3", "jing-4", "jing-5", "jing-6", "jing-7", "jing-8", "jing-9", "jing-10"]
+    };
+
+    const byId = new Map(guests.map(guest => [guest.id, guest]));
+    let state = loadState();
+    let activeGroup = "all";
+
+    const pool = document.querySelector("#pool");
+    const tablesEl = document.querySelector("#tables");
+    const groupTabs = document.querySelector("#groupTabs");
+    const searchInput = document.querySelector("#searchInput");
+    const sideFilter = document.querySelector("#sideFilter");
+    const capacityInput = document.querySelector("#capacityInput");
+    const dialog = document.querySelector("#dataDialog");
+    const dataBox = document.querySelector("#dataBox");
+    const toast = document.querySelector("#toast");
+
+    function createDefaultState(withAssignments = true) {
+      const tables = structuredClone(initialTables);
+      if (withAssignments) {
+        for (const table of tables) table.guestIds = [...(starterAssignments[table.id] || [])];
+      }
+      return { tables };
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!saved || !Array.isArray(saved.tables)) return createDefaultState(true);
+
+        const currentIds = new Set(guests.map(guest => guest.id));
+        const tables = initialTables.map(base => {
+          const savedTable = saved.tables.find(table => table.id === base.id);
+          return {
+            ...base,
+            name: savedTable?.name || base.name,
+            capacity: Number(savedTable?.capacity) || DEFAULT_CAPACITY,
+            guestIds: (savedTable?.guestIds || []).filter(id => currentIds.has(id))
+          };
+        });
+
+        return { tables };
+      } catch {
+        return createDefaultState(true);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getAssignedIds() {
+      return new Set(state.tables.flatMap(table => table.guestIds));
+    }
+
+    function getUnassignedGuests() {
+      const assigned = getAssignedIds();
+      return guests.filter(guest => !assigned.has(guest.id));
+    }
+
+    function guestElement(guest) {
+      const el = document.createElement("div");
+      el.className = "guest";
+      el.draggable = true;
+      el.dataset.guestId = guest.id;
+      el.dataset.side = guest.side;
+      el.dataset.group = guest.group;
+      el.title = `${guest.side} / ${guest.group}${guest.note ? " / " + guest.note : ""}`;
+
+      const name = document.createElement("span");
+      name.className = "guest-name";
+      name.textContent = guest.name;
+      el.appendChild(name);
+
+      if (guest.note) {
+        const note = document.createElement("span");
+        note.className = "guest-note";
+        note.textContent = guest.note;
+        el.appendChild(note);
+      }
+
+      el.addEventListener("dragstart", event => {
+        event.dataTransfer.setData("text/plain", guest.id);
+        event.dataTransfer.effectAllowed = "move";
+      });
+
+      return el;
+    }
+
+    function renderTabs() {
+      const groups = ["all", ...new Set(guests.map(guest => guest.group))];
+      groupTabs.innerHTML = "";
+      groups.forEach(group => {
+        const button = document.createElement("button");
+        button.className = `tab${activeGroup === group ? " active" : ""}`;
+        button.textContent = group === "all" ? "全部" : group;
+        button.addEventListener("click", () => {
+          activeGroup = group;
+          renderTabs();
+          applyFilters();
+        });
+        groupTabs.appendChild(button);
+      });
+    }
+
+    function render() {
+      pool.innerHTML = "";
+      getUnassignedGuests().forEach(guest => pool.appendChild(guestElement(guest)));
+
+      tablesEl.innerHTML = "";
+      state.tables.forEach((table, index) => {
+        const tableCard = document.createElement("section");
+        tableCard.className = "table-card";
+
+        const head = document.createElement("div");
+        head.className = "table-head";
+
+        const title = document.createElement("div");
+        title.className = "table-title";
+        title.innerHTML = `<div class="table-number">${index + 1}</div>`;
+
+        const titleText = document.createElement("div");
+        const nameInput = document.createElement("input");
+        nameInput.className = "table-name";
+        nameInput.value = table.name;
+        nameInput.setAttribute("aria-label", `第 ${index + 1} 桌名稱`);
+        nameInput.addEventListener("change", () => {
+          table.name = nameInput.value.trim() || `第 ${index + 1} 桌`;
+          saveState();
+          render();
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "table-meta";
+        meta.textContent = `容量 ${table.capacity} 人`;
+        titleText.append(nameInput, meta);
+        title.appendChild(titleText);
+
+        const count = document.createElement("div");
+        const total = table.guestIds.length;
+        count.className = "table-count";
+        if (total > table.capacity) count.classList.add("over");
+        else if (total >= table.capacity) count.classList.add("warning");
+        count.textContent = `${total}/${table.capacity}`;
+
+        head.append(title, count);
+
+        const seats = document.createElement("div");
+        seats.className = "seats dropzone";
+        seats.dataset.tableId = table.id;
+        table.guestIds.forEach(id => {
+          const guest = byId.get(id);
+          if (guest) seats.appendChild(guestElement(guest));
+        });
+
+        const foot = document.createElement("div");
+        foot.className = "table-foot";
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = table.guestIds.length ? summarizeTable(table.guestIds) : "把名牌拖到這一桌";
+        const clear = document.createElement("button");
+        clear.className = "mini";
+        clear.textContent = "清空";
+        clear.addEventListener("click", () => {
+          table.guestIds = [];
+          saveState();
+          render();
+          showToast("已清空這桌");
+        });
+        foot.append(hint, clear);
+
+        tableCard.append(head, seats, foot);
+        tablesEl.appendChild(tableCard);
+      });
+
+      wireDropzones();
+      renderStats();
+      applyFilters();
+    }
+
+    function summarizeTable(ids) {
+      const counts = ids.reduce((acc, id) => {
+        const guest = byId.get(id);
+        if (!guest) return acc;
+        acc[guest.side] = (acc[guest.side] || 0) + 1;
+        return acc;
+      }, {});
+      return Object.entries(counts).map(([side, count]) => `${side} ${count}`).join(" · ");
+    }
+
+    function wireDropzones() {
+      document.querySelectorAll(".dropzone").forEach(zone => {
+        zone.addEventListener("dragover", event => {
+          event.preventDefault();
+          zone.classList.add("drag-over");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+        zone.addEventListener("drop", event => {
+          event.preventDefault();
+          zone.classList.remove("drag-over");
+          const guestId = event.dataTransfer.getData("text/plain");
+          moveGuest(guestId, zone.dataset.tableId);
+        });
+      });
+    }
+
+    function moveGuest(guestId, targetTableId) {
+      if (!byId.has(guestId)) return;
+      state.tables.forEach(table => {
+        table.guestIds = table.guestIds.filter(id => id !== guestId);
+      });
+
+      if (targetTableId !== "unassigned") {
+        const table = state.tables.find(item => item.id === targetTableId);
+        table?.guestIds.push(guestId);
+      }
+
+      saveState();
+      render();
+    }
+
+    function applyFilters() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const side = sideFilter.value;
+      document.querySelectorAll(".guest").forEach(el => {
+        const guest = byId.get(el.dataset.guestId);
+        const haystack = `${guest.name} ${guest.side} ${guest.group} ${guest.note}`.toLowerCase();
+        const visible =
+          (!keyword || haystack.includes(keyword)) &&
+          (side === "all" || guest.side === side) &&
+          (activeGroup === "all" || guest.group === activeGroup);
+        el.hidden = !visible;
+      });
+    }
+
+    function renderStats() {
+      const assigned = getAssignedIds().size;
+      const over = state.tables.filter(table => table.guestIds.length > table.capacity).length;
+      document.querySelector("#totalGuests").textContent = guests.length;
+      document.querySelector("#assignedGuests").textContent = assigned;
+      document.querySelector("#unassignedGuests").textContent = guests.length - assigned;
+      document.querySelector("#tableCount").textContent = state.tables.length;
+      document.querySelector("#overTables").textContent = over;
+    }
+
+    function exportData() {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        guests,
+        tables: state.tables.map(table => ({
+          table: table.name,
+          capacity: table.capacity,
+          guests: table.guestIds.map(id => byId.get(id)).filter(Boolean)
+        })),
+        rawState: state
+      };
+      document.querySelector("#dialogTitle").textContent = "匯出座位安排";
+      document.querySelector("#dialogHint").textContent = "這份 JSON 可以貼到訊息、存成檔案，之後用匯入功能恢復。";
+      dataBox.value = JSON.stringify(payload, null, 2);
+      document.querySelector("#applyImportBtn").style.display = "none";
+      dialog.showModal();
+      dataBox.focus();
+      dataBox.select();
+    }
+
+    function openImport() {
+      document.querySelector("#dialogTitle").textContent = "匯入座位安排";
+      document.querySelector("#dialogHint").textContent = "貼上先前匯出的 JSON，按套用匯入。";
+      dataBox.value = "";
+      document.querySelector("#applyImportBtn").style.display = "";
+      dialog.showModal();
+      dataBox.focus();
+    }
+
+    function applyImport() {
+      try {
+        const parsed = JSON.parse(dataBox.value);
+        const importedState = parsed.rawState || parsed;
+        if (!Array.isArray(importedState.tables)) throw new Error("missing tables");
+        state = {
+          tables: initialTables.map(base => {
+            const found = importedState.tables.find(table => table.id === base.id);
+            return {
+              ...base,
+              name: found?.name || base.name,
+              capacity: Number(found?.capacity) || DEFAULT_CAPACITY,
+              guestIds: Array.isArray(found?.guestIds) ? found.guestIds.filter(id => byId.has(id)) : []
+            };
+          })
+        };
+        saveState();
+        dialog.close();
+        render();
+        showToast("已匯入座位安排");
+      } catch {
+        showToast("匯入失敗，請確認 JSON 格式");
+      }
+    }
+
+    function autoArrange() {
+      state = createDefaultState(true);
+      saveState();
+      render();
+      showToast("已依分類自動分成 14 桌");
+    }
+
+    function applyCapacity() {
+      const capacity = Number(capacityInput.value);
+      if (!Number.isFinite(capacity) || capacity < 1) return;
+      state.tables.forEach(table => table.capacity = capacity);
+      saveState();
+      render();
+      showToast(`已套用每桌 ${capacity} 人`);
+    }
+
+    function resetAll() {
+      if (!confirm("確定要清除目前座位安排，回到預設分桌嗎？")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = createDefaultState(true);
+      render();
+      showToast("已重設");
+    }
+
+    async function copyData() {
+      try {
+        await navigator.clipboard.writeText(dataBox.value);
+        showToast("已複製");
+      } catch {
+        dataBox.focus();
+        dataBox.select();
+        showToast("請手動複製選取內容");
+      }
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    sideFilter.addEventListener("change", applyFilters);
+    document.querySelector("#clearSearchBtn").addEventListener("click", () => {
+      searchInput.value = "";
+      sideFilter.value = "all";
+      activeGroup = "all";
+      renderTabs();
+      applyFilters();
+    });
+    document.querySelector("#applyCapacityBtn").addEventListener("click", applyCapacity);
+    document.querySelector("#autoArrangeBtn").addEventListener("click", autoArrange);
+    document.querySelector("#exportBtn").addEventListener("click", exportData);
+    document.querySelector("#importBtn").addEventListener("click", openImport);
+    document.querySelector("#printBtn").addEventListener("click", () => window.print());
+    document.querySelector("#resetBtn").addEventListener("click", resetAll);
+    document.querySelector("#closeDialogBtn").addEventListener("click", () => dialog.close());
+    document.querySelector("#copyDataBtn").addEventListener("click", copyData);
+    document.querySelector("#applyImportBtn").addEventListener("click", applyImport);
+
+    renderTabs();
+    render();
+  </script>
+</body>
+</html>
