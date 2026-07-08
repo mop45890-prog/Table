@@ -125,6 +125,29 @@
       font-size: 13px;
     }
 
+    .sync-note {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      margin: 0 0 14px;
+      padding: 11px 12px;
+      border: 1px solid #d8c5a1;
+      border-radius: var(--radius);
+      background: #fff8e8;
+      color: #4f3b16;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .sync-dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 5px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
     .workspace {
       display: grid;
       grid-template-columns: 340px minmax(0, 1fr);
@@ -510,6 +533,11 @@
       <div class="stat"><b id="overTables">0</b><span>超過容量桌數</span></div>
     </section>
 
+    <section class="sync-note" aria-label="同步提醒">
+      <span class="sync-dot" aria-hidden="true"></span>
+      <div>目前是 GitHub Pages 靜態版，兩個人同時開啟時不會即時看到對方變更。需要共同編輯的話，可以先用匯出 / 匯入交換；若要即時同步，需要再接 Firebase、Supabase 或其他線上資料庫。</div>
+    </section>
+
     <section class="workspace">
       <aside>
         <div class="side-head">
@@ -557,7 +585,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const STORAGE_KEY = "wedding-seating-v2";
+    const STORAGE_KEY = "wedding-seating-v3";
     const DEFAULT_CAPACITY = 10;
 
     const rawGuests = [
@@ -722,18 +750,18 @@
     ].map((name, index) => ({
       id: `table-${index + 1}`,
       name,
-      capacity: DEFAULT_CAPACITY,
+      capacity: index === 0 ? 12 : DEFAULT_CAPACITY,
       guestIds: []
     }));
 
     const starterAssignments = {
-      "table-1": ["tif-main-1", "tif-main-2", "tif-main-3", "tif-main-4", "mop-main-1", "mop-main-2", "mop-main-3", "mop-main-4", "mop-main-5", "mop-main-6"],
+      "table-1": ["tif-main-1", "tif-main-2", "tif-main-3", "tif-main-4", "mop-main-1", "mop-main-2", "mop-main-3", "mop-main-4", "mop-main-5", "mop-main-6", "mop-main-7", "mop-main-8"],
       "table-2": ["tif-rel-1", "tif-rel-2", "tif-rel-3", "tif-rel-4", "tif-rel-5", "tif-rel-6", "tif-rel-7", "tif-rel-8", "tif-rel-9", "tif-rel-10"],
       "table-3": ["tif-high-1", "tif-high-2", "tif-high-3", "tif-college-1", "tif-college-2", "tif-college-3", "tif-college-4", "mop-grad-10", "mop-grad-11"],
       "table-4": ["tif-18sa-1", "tif-18sa-2", "tif-18sa-3", "tif-18sa-4", "tif-18sa-5", "tif-18sa-6", "tif-18sa-7", "tif-18sa-8", "tif-18sa-9", "tif-18sa-10"],
       "table-5": ["tif-18sa-11", "tif-18sa-12", "tif-18sa-13", "tif-18sa-14", "tif-18sa-15", "tif-work-1", "tif-work-2", "tif-work-3", "tif-work-4", "tif-work-5"],
       "table-6": ["tif-work-6", "tif-work-7", "tif-work-8", "tif-work-9", "tif-work-10", "tif-work-11", "tif-work-12", "mop-grad-12"],
-      "table-7": ["mop-main-7", "mop-main-8", "mop-rel-1", "mop-rel-2", "mop-rel-3", "mop-rel-4", "mop-rel-5", "mop-rel-6", "mop-rel-7", "mop-rel-8"],
+      "table-7": ["mop-rel-1", "mop-rel-2", "mop-rel-3", "mop-rel-4", "mop-rel-5", "mop-rel-6", "mop-rel-7", "mop-rel-8"],
       "table-8": ["mop-rel-9", "mop-rel-10", "mop-rel-11", "mop-rel-12", "mop-rel-13", "mop-rel-14", "mop-aunt1-1", "mop-aunt2-1", "mop-aunt2-2", "mop-aunt2-3"],
       "table-9": ["mop-aunt2-4", "mop-aunt2-5", "mop-aunt2-6", "mop-aunt3-1", "mop-aunt3-2", "mop-aunt4-1", "mop-great-1", "mop-great-2", "mop-huili-1", "mop-huili-2"],
       "table-10": ["mop-huili-3", "mop-uncle1-1", "mop-uncle1-2", "mop-uncle1-3", "mop-uncle1-4", "mop-uncle1-5", "mop-uncle2-1", "mop-uncle2-2", "mop-uncle2-3", "mop-uncle2-4"],
